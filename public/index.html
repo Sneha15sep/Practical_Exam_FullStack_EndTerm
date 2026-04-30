@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Record Manager</title>
+</head>
+
+<body>
+
+<h2>Student Record Manager</h2>
+
+<h3>Add Student</h3>
+
+Name:
+<input id="name">
+
+Roll No:
+<input id="rollNumber">
+
+Branch:
+<input id="branch">
+
+Marks:
+<input id="marks">
+
+<button onclick="addStudent()">Add</button>
+
+
+<h3>Student List</h3>
+
+<div id="studentList"></div>
+
+
+<script>
+
+// show all students
+async function showStudents() {
+
+    const response = await fetch("/api/students");
+    const data = await response.json();
+
+    let output = "";
+
+    data.forEach(s => {
+
+        output += `
+        <p>
+        ${s.name} | ${s.rollNumber} | ${s.branch} | ${s.marks}
+
+        <button onclick="editMarks('${s._id}')">Edit</button>
+
+        <button onclick="removeStudent('${s._id}')">Delete</button>
+        </p>
+        `;
+    });
+
+    document.getElementById("studentList").innerHTML = output;
+}
+
+
+// add new student
+async function addStudent() {
+
+    const name = document.getElementById("name").value;
+    const rollNumber = document.getElementById("rollNumber").value;
+    const branch = document.getElementById("branch").value;
+    const marks = document.getElementById("marks").value;
+
+    await fetch("/api/students", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            name: name,
+            rollNumber: rollNumber,
+            branch: branch,
+            marks: marks
+        })
+    });
+
+    showStudents();
+}
+
+
+// update marks
+async function editMarks(id) {
+
+    const newMarks = prompt("Enter new marks");
+
+    if (!newMarks) return;
+
+    await fetch("/api/students/" + id, {
+
+        method: "PUT",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            marks: newMarks
+        })
+    });
+
+    showStudents();
+}
+
+
+// delete student
+async function removeStudent(id) {
+
+    await fetch("/api/students/" + id, {
+
+        method: "DELETE"
+    });
+
+    showStudents();
+}
+
+
+// load data when page opens
+showStudents();
+
+</script>
+
+</body>
+</html>
